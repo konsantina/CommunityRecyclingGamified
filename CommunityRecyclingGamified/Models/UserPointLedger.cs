@@ -29,5 +29,6 @@ namespace CommunityRecyclingGamified.Models
 
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
     }
 }

@@ -12,12 +12,12 @@ namespace CommunityRecyclingGamified.Models
         [Required]
         public int UserId { get; set; }
         [ForeignKey(nameof(UserId))]
-        public UserProfile UserProfile { get; set; }
+        public UserProfile? UserProfile { get; set; }
 
         [Required]
         public int BadgeId { get; set; }
         [ForeignKey(nameof(BadgeId))]
-        public Badge Badge { get; set; }
+        public Badge? Badge { get; set; }
 
         [Required]
         public DateTime UnlockedAt { get; set; } = DateTime.UtcNow;
