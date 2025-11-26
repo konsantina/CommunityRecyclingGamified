@@ -1,4 +1,6 @@
 using CommunityRecyclingGamified.Data;
+using CommunityRecyclingGamified.Repositories;
+using CommunityRecyclingGamified.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.SqlServer;
 
@@ -18,7 +20,7 @@ namespace CommunityRecyclingGamified
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-
+            builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

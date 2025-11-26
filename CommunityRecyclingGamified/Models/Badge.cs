@@ -10,19 +10,19 @@ namespace CommunityRecyclingGamified.Models
         public int Id { get; set; }
 
         [Required, MaxLength(80)]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [MaxLength(200)]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         [MaxLength(200)]
-        public string IconUrl { get; set; }
+        public string? IconUrl { get; set; }
 
         [Required]
         public BadgeRuleType RuleType { get; set; }
 
         // JSON parameters for rule (e.g. { "count": 10, "period": "Monthly" })
-        public string RuleParams { get; set; }
+        public string? RuleParams { get; set; }
 
         [Required]
         public bool IsActive { get; set; } = true;

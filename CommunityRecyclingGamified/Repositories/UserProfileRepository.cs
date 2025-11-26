@@ -1,6 +1,9 @@
 ﻿using CommunityRecyclingGamified.Data;
+using CommunityRecyclingGamified.Dto;
+using CommunityRecyclingGamified.Enums;
 using CommunityRecyclingGamified.Models;
 using CommunityRecyclingGamified.Repositories.Interfaces;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 namespace CommunityRecyclingGamified.Repositories
@@ -12,9 +15,10 @@ namespace CommunityRecyclingGamified.Repositories
         {
             _context = context;
         }
-        public Task AddAsync(UserProfile user)
+        public async Task<bool> AddAsync(UserProfile user)
         {
-            throw new NotImplementedException();
+            await _context.UserProfiles.AddAsync(user);
+            return await _context.SaveChangesAsync() > 0;
         }
 
         public void Delete(UserProfile user)
@@ -29,22 +33,17 @@ namespace CommunityRecyclingGamified.Repositories
 
         public Task<UserProfile?> GetByEmailAsync(string email)
         {
-            throw new NotImplementedException();
+           return _context.UserProfiles.FirstOrDefaultAsync(u => u.Email == email);
         }
 
         public Task<UserProfile?> GetByIdAsync(int id)
         {
-            throw new NotImplementedException();
-        }
-
-        public Task<bool> SaveChangesAsync()
-        {
-            throw new NotImplementedException();
+            return _context.UserProfiles.FirstOrDefaultAsync(u => u.Id == id);
         }
 
         public void Update(UserProfile user)
         {
-            throw new NotImplementedException();
+            _context.SaveChangesAsync();
         }
     }
 }

@@ -9,9 +9,8 @@ namespace CommunityRecyclingGamified.Repositories.Interfaces
         Task<IEnumerable<UserProfile>> GetAllAsync();
         Task<UserProfile?> GetByIdAsync(int id);
         Task<UserProfile?> GetByEmailAsync(string email);
-        Task AddAsync(UserProfile user);
+        Task<bool> AddAsync(UserProfile user);
         void Update(UserProfile user);
         void Delete(UserProfile user);
-        Task<bool> SaveChangesAsync();
     }
 }
