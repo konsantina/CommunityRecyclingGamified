@@ -21,6 +21,7 @@ namespace CommunityRecyclingGamified
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
+            builder.Services.AddScoped<IMaterialRepository, MaterialRepository>();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

@@ -21,9 +21,14 @@ namespace CommunityRecyclingGamified.Repositories
             return await _context.SaveChangesAsync() > 0;
         }
 
-        public void Delete(UserProfile user)
+        public async Task<bool> Delete(int id)
         {
-            throw new NotImplementedException();
+            var userProfile = await _context.UserProfiles.FirstOrDefaultAsync(p => p.Id == id);
+            if (userProfile == null)
+                return false;
+
+            _context.UserProfiles.Remove(userProfile);
+            return await _context.SaveChangesAsync() > 0;
         }
 
         public async Task<IEnumerable<UserProfile>> GetAllAsync()

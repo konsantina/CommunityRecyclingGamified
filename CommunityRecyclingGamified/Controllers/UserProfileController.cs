@@ -102,6 +102,18 @@ namespace CommunityRecyclingGamified.Controllers
             return Ok(existing);
         }
 
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> DeleteUserProfile(int id)
+        {
+            var deleted = await _userProfileRepository.Delete(id);
+
+            if (!deleted)
+                return NotFound();
+
+            return NoContent();
+        }
+
+
 
     }
 }
