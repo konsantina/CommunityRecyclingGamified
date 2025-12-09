@@ -1,6 +1,6 @@
 ﻿using CommunityRecyclingGamified.Models;
 
-namespace CommunityRecyclingGamified.Repositories
+namespace CommunityRecyclingGamified.Repositories.Interfaces
 {
     public interface INeighborhoodRepository
     {

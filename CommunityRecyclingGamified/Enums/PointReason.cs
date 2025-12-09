@@ -4,6 +4,7 @@
     {
         Dropoff,
         Redemption,
-        Correction
+        Correction,
+        DropoffReward
     }
 }

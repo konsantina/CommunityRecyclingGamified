@@ -1,5 +1,6 @@
 ﻿using CommunityRecyclingGamified.Data;
 using CommunityRecyclingGamified.Models;
+using CommunityRecyclingGamified.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Immutable;
 

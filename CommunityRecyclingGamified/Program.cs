@@ -23,6 +23,10 @@ namespace CommunityRecyclingGamified
             builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
             builder.Services.AddScoped<IMaterialRepository, MaterialRepository>();
             builder.Services.AddScoped<INeighborhoodRepository, NeighborhoodRepository>();
+            builder.Services.AddScoped<IDropoffRepository, DropoffRepository>();
+            builder.Services.AddScoped<IUserPointLedgerRepository, UserPointLedgerRepository>();
+            builder.Services.AddScoped<IRewardRepository, RewardRepository>();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

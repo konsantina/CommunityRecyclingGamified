@@ -1,5 +1,5 @@
 ﻿using CommunityRecyclingGamified.Models;
-using CommunityRecyclingGamified.Repositories;
+using CommunityRecyclingGamified.Repositories.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CommunityRecyclingGamified.Controllers

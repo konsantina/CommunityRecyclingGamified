@@ -2,10 +2,10 @@
 {
     public enum DropoffStatus
     {
-        Recorded,
-        Flagged,
-        Verified,
-        Rejected
+        Recorded,   // Μόλις δηλώθηκε
+        Flagged,    // Κάποιο πρόβλημα – χρειάζεται έλεγχο
+        Verified,   // Εγκρίθηκε από verifier
+        Rejected    // Απορρίφθηκε
 
     }
 }
