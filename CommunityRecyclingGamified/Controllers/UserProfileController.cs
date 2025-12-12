@@ -68,7 +68,7 @@ namespace CommunityRecyclingGamified.Controllers
                 TotalPoints = userProfile.TotalPoints,
                 Level = userProfile.Level
             };
-
+            
             var saved = await _userProfileRepository.AddAsync(user);
 
             if (!saved)

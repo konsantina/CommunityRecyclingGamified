@@ -1,6 +1,7 @@
 ﻿using CommunityRecyclingGamified.Data;
 using CommunityRecyclingGamified.Models;
 using CommunityRecyclingGamified.Repositories.Interfaces;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace CommunityRecyclingGamified.Repositories
@@ -12,9 +13,11 @@ namespace CommunityRecyclingGamified.Repositories
         {
             _context = context;
         }
-        public Task<bool> AddAsync(Reward reward)
+       
+        public async Task<bool> AddAsync(Reward reward)
         {
-            throw new NotImplementedException();
+            _context.Rewards.AddAsync(reward);
+            return await _context.SaveChangesAsync() > 0;
         }
 
         public async Task<IEnumerable<Reward>> GetAllActiveAsync()
@@ -27,9 +30,33 @@ namespace CommunityRecyclingGamified.Repositories
             return await _context.Rewards.FirstOrDefaultAsync(r => r.Id == id);
         }
 
-        public Task<bool> UpdateAsync(Reward reward)
+        public async Task<bool> UpdateAsync(Reward reward, int id)
         {
-            throw new NotImplementedException();
+            var oldReward = await _context.Rewards.FirstOrDefaultAsync(x => x.Id == id);
+            if (oldReward == null)
+                return false;
+
+            oldReward.Title = reward.Title;
+            oldReward.Description = reward.Description;
+            oldReward.CostPoints = reward.CostPoints;
+            oldReward.Stock = reward.Stock;
+            oldReward.ValidFrom = reward.ValidFrom;
+            oldReward.ValidTo = reward.ValidTo;
+            oldReward.TermsUrl = reward.TermsUrl;
+            oldReward.IsActive = reward.IsActive;
+
+            _context.Rewards.Update(oldReward);
+            return await _context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var reward = await _context.Rewards.FirstOrDefaultAsync(o => o.Id == id);
+            if (reward == null) 
+                return false;
+            
+            _context.Rewards.Remove(reward);
+            return await _context.SaveChangesAsync() > 0;
         }
     }
 }
