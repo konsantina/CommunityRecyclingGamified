@@ -5,6 +5,7 @@
         Dropoff,
         Redemption,
         Correction,
-        DropoffReward
+        DropoffReward,
+        RedemptionCost
     }
 }

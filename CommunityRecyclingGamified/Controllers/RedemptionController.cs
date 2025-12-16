@@ -89,5 +89,61 @@ namespace CommunityRecyclingGamified.Controllers
 
             return Ok(redemption);
         }
+
+        [HttpPost("{id:int}/approve")]
+        public async Task<IActionResult> Approve(int id, [FromBody] RedemptionApproveDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var success = await _redemptionRepository.ApproveAsync(id, dto.ApproverUserId);
+
+            if (!success)
+                return BadRequest("Cannot approve redemption (not found / not pending / not enough points / invalid reward).");
+
+            return NoContent();
+        }
+
+        [HttpGet("pending")]
+        public async Task<ActionResult<IEnumerable<Redemption>>> GetPending()
+        {
+            var redemptions = await _redemptionRepository.GetPendingAsync();
+            return Ok(redemptions);
+        }
+
+        [HttpGet("user/{userId:int}")]
+        public async Task<ActionResult<IEnumerable<Redemption>>> GetByUser(int userId)
+        {
+            var redemptions = await _redemptionRepository.GetByUserAsync(userId);
+            return Ok(redemptions);
+        }
+
+        [HttpPost("{id:int}/reject")]
+        public async Task<IActionResult> Reject(int id, [FromBody] RedemptionRejectDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var ok = await _redemptionRepository.RejectAsync(id, dto.RejectedByUserId);
+
+            if (!ok)
+                return BadRequest("Cannot reject redemption");
+
+            return NoContent();
+        }
+
+        [HttpPost("{id:int}/fulfill")]
+        public async Task<IActionResult> Fulfill(int id, [FromBody] string? code)
+        {
+            var ok = await _redemptionRepository.FulfillAsync(id, code);
+
+            if (!ok)
+                return BadRequest("Cannot fulfill redemption");
+
+            return NoContent();
+        }
+
+
+
     }
 }

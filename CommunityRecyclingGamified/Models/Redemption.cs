@@ -24,7 +24,7 @@ namespace CommunityRecyclingGamified.Models
         public int CostSnapshot { get; set; }
 
         [Required]
-        public RedemptionStatus Status { get; set; } = RedemptionStatus.Requested;
+        public RedemptionStatus Status { get; set; } = RedemptionStatus.Pending;
 
         public int? ApprovedBy { get; set; }
         public UserProfile ApprovedByUser { get; set; }
