@@ -4,6 +4,7 @@
     {
         Requested,
         Approved,
+        Pending,
         Fulfilled,
         Cancelled
     }
