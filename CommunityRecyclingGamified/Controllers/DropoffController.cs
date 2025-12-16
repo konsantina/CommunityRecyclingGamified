@@ -2,6 +2,7 @@
 using CommunityRecyclingGamified.Enums;
 using CommunityRecyclingGamified.Models;
 using CommunityRecyclingGamified.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CommunityRecyclingGamified.Controllers
@@ -18,6 +19,7 @@ namespace CommunityRecyclingGamified.Controllers
         }
 
         //Post: api/Dropoff
+        [Authorize]
         [HttpPost]
         public async Task<ActionResult<Dropoff>> CreateDropoff([FromBody] DropoffDto dto)
         {
@@ -32,7 +34,7 @@ namespace CommunityRecyclingGamified.Controllers
                 Quantity = dto.Quantity,
                 Unit = dto.Unit,
                 Location = dto.Location,
-                Status = DropoffStatus.Recorded,   // πρώτο στάδιο
+                Status = DropoffStatus.Recorded,  
                 PointsAwarded = 0,
                 CreatedAt = DateTime.UtcNow
             };
@@ -47,6 +49,7 @@ namespace CommunityRecyclingGamified.Controllers
             return CreatedAtAction(nameof(GetById), new { id = dropoff.Id }, dropoff);
         }
         // GET: api/Dropoff/{id}
+        [AllowAnonymous]
         [HttpGet("{id:int}")]
         public async Task<ActionResult<Dropoff>> GetById(int id)
         {
@@ -58,6 +61,7 @@ namespace CommunityRecyclingGamified.Controllers
             return Ok(dropoff);
         }
         // GET: api/Dropoff/pending
+        [AllowAnonymous]
         [HttpGet("pending")]
         public async Task<ActionResult<IEnumerable<Dropoff>>> GetPending()
         {

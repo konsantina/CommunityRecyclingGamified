@@ -1,4 +1,4 @@
-using CommunityRecyclingGamified.Data;
+﻿using CommunityRecyclingGamified.Data;
 using CommunityRecyclingGamified.Repositories;
 using CommunityRecyclingGamified.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -26,6 +26,7 @@ namespace CommunityRecyclingGamified
             builder.Services.AddScoped<IDropoffRepository, DropoffRepository>();
             builder.Services.AddScoped<IUserPointLedgerRepository, UserPointLedgerRepository>();
             builder.Services.AddScoped<IRewardRepository, RewardRepository>();
+            builder.Services.AddScoped<IRedemptionRepository, RedemptionRepository>();
 
             var app = builder.Build();
 
