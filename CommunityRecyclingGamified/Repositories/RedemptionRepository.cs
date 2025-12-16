@@ -50,7 +50,6 @@ namespace CommunityRecyclingGamified.Repositories
 
         public async Task<bool> ApproveAsync(int redemptionId, int approverUserId)
         {
-            // Φέρνουμε Redemption + User + Reward σε ένα query
             var redemption = await _context.Redemptions
                 .Include(r => r.UserProfile)
                 .Include(r => r.Reward)
@@ -59,11 +58,9 @@ namespace CommunityRecyclingGamified.Repositories
             if (redemption == null)
                 return false;
 
-            // επιτρέπουμε approve μόνο αν είναι Pending
             if (redemption.Status != RedemptionStatus.Pending)
                 return false;
 
-            // Reward checks (ξανά για ασφάλεια)
             if (!redemption.Reward.IsActive)
                 return false;
 
@@ -77,23 +74,19 @@ namespace CommunityRecyclingGamified.Repositories
                 return false;
 
             // Points check
-            var cost = redemption.CostSnapshot; // κρατάμε το snapshot
+            var cost = redemption.CostSnapshot;
             if (redemption.UserProfile.TotalPoints < cost)
                 return false;
 
-            // 1) Αφαιρούμε πόντους
             redemption.UserProfile.TotalPoints -= cost;
 
-            // 2) Μειώνουμε stock (αν υπάρχει)
             if (redemption.Reward.Stock.HasValue)
                 redemption.Reward.Stock -= 1;
 
-            // 3) Update redemption status
             redemption.Status = RedemptionStatus.Approved;
             redemption.ApprovedBy = approverUserId;
             redemption.ApprovedAt = DateTime.UtcNow;
 
-            // 4) Ledger entry (αρνητικό)
             var ledgerEntry = new UserPointLedger
             {
                 UserId = redemption.UserId,
@@ -106,7 +99,6 @@ namespace CommunityRecyclingGamified.Repositories
 
             _context.UserPointLedgers.Add(ledgerEntry);
 
-            // ένα SaveChanges για όλα
             return await _context.SaveChangesAsync() > 0;
         }
 
@@ -118,18 +110,12 @@ namespace CommunityRecyclingGamified.Repositories
             if (redemption == null)
                 return false;
 
-            // Reject μόνο αν είναι Pending/Requested
             if (redemption.Status != RedemptionStatus.Pending)
                 return false;
 
             redemption.Status = RedemptionStatus.Rejected;
 
-            // αν θέλεις να κρατάς "πότε" απορρίφθηκε, χρησιμοποίησε το CancelledAt:
             redemption.CancelledAt = DateTime.UtcNow;
-
-            // (προαιρετικά) αν θέλεις να ξέρεις ποιος το χειρίστηκε, μπορείς να
-            // χρησιμοποιήσεις ApprovedBy σαν "handledBy", αλλά ΔΕΝ το προτείνω.
-            // καλύτερα να το αφήσεις κενό εδώ.
 
             return await _context.SaveChangesAsync() > 0;
         }
