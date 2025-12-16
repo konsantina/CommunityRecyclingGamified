@@ -2,10 +2,12 @@
 using CommunityRecyclingGamified.Enums;
 using CommunityRecyclingGamified.Models;
 using CommunityRecyclingGamified.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CommunityRecyclingGamified.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/[controller]")]
     public class RedemptionController : ControllerBase
@@ -24,24 +26,32 @@ namespace CommunityRecyclingGamified.Controllers
             _rewardRepository = rewardRepository;
         }
 
-        // POST: api/Redemption
+        /// <summary>
+        /// User requests a reward redemption.
+        /// </summary>
         [HttpPost]
+        [Authorize(Roles = "User,Admin")]
+        [ProducesResponseType(typeof(Redemption), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<Redemption>> CreateRedemption([FromBody] RedemptionCreateDto dto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // 1️⃣ Φέρε User
+            // 1) Get User
             var user = await _userProfileRepository.GetByIdAsync(dto.UserId);
             if (user == null)
                 return NotFound("User not found");
 
-            // 2️⃣ Φέρε Reward
+            // 2) Get Reward
             var reward = await _rewardRepository.GetByIdAsync(dto.RewardId);
             if (reward == null)
                 return NotFound("Reward not found");
 
-            // 3️⃣ Business checks
+            // 3) Business checks
             if (!reward.IsActive)
                 return BadRequest("Reward is not active");
 
@@ -57,7 +67,7 @@ namespace CommunityRecyclingGamified.Controllers
             if (user.TotalPoints < reward.CostPoints)
                 return BadRequest("Not enough points");
 
-            // 4️⃣ Δημιουργία Redemption
+            // 4) Create Redemption
             var redemption = new Redemption
             {
                 UserId = user.Id,
@@ -70,17 +80,19 @@ namespace CommunityRecyclingGamified.Controllers
             var saved = await _redemptionRepository.AddAsync(redemption);
 
             if (!saved)
-                return StatusCode(StatusCodes.Status500InternalServerError,
-                    "Could not create redemption");
+                return StatusCode(StatusCodes.Status500InternalServerError, "Could not create redemption");
 
-            return CreatedAtAction(
-                nameof(GetById),
-                new { id = redemption.Id },
-                redemption);
+            return CreatedAtAction(nameof(GetById), new { id = redemption.Id }, redemption);
         }
 
-        // GET: api/Redemption/5
+        /// <summary>
+        /// Get redemption by id.
+        /// </summary>
         [HttpGet("{id:int}")]
+        [Authorize]
+        [ProducesResponseType(typeof(Redemption), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Redemption>> GetById(int id)
         {
             var redemption = await _redemptionRepository.GetByIdAsync(id);
@@ -90,7 +102,15 @@ namespace CommunityRecyclingGamified.Controllers
             return Ok(redemption);
         }
 
+        /// <summary>
+        /// Approve a pending redemption (Admin only).
+        /// </summary>
         [HttpPost("{id:int}/approve")]
+        [Authorize(Roles = "Admin")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> Approve(int id, [FromBody] RedemptionApproveDto dto)
         {
             if (!ModelState.IsValid)
@@ -104,21 +124,42 @@ namespace CommunityRecyclingGamified.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Get all pending redemptions (Admin only).
+        /// </summary>
         [HttpGet("pending")]
+        [Authorize(Roles = "Admin")]
+        [ProducesResponseType(typeof(IEnumerable<Redemption>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<IEnumerable<Redemption>>> GetPending()
         {
             var redemptions = await _redemptionRepository.GetPendingAsync();
             return Ok(redemptions);
         }
 
+        /// <summary>
+        /// Get redemptions for a given user (Authenticated).
+        /// </summary>
         [HttpGet("user/{userId:int}")]
+        [Authorize]
+        [ProducesResponseType(typeof(IEnumerable<Redemption>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<IEnumerable<Redemption>>> GetByUser(int userId)
         {
             var redemptions = await _redemptionRepository.GetByUserAsync(userId);
             return Ok(redemptions);
         }
 
+        /// <summary>
+        /// Reject a pending redemption (Admin only).
+        /// </summary>
         [HttpPost("{id:int}/reject")]
+        [Authorize(Roles = "Admin")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> Reject(int id, [FromBody] RedemptionRejectDto dto)
         {
             if (!ModelState.IsValid)
@@ -132,7 +173,15 @@ namespace CommunityRecyclingGamified.Controllers
             return NoContent();
         }
 
+        /// <summary>
+        /// Fulfill an approved redemption (Admin only).
+        /// </summary>
         [HttpPost("{id:int}/fulfill")]
+        [Authorize(Roles = "Admin")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<IActionResult> Fulfill(int id, [FromBody] string? code)
         {
             var ok = await _redemptionRepository.FulfillAsync(id, code);
@@ -142,8 +191,5 @@ namespace CommunityRecyclingGamified.Controllers
 
             return NoContent();
         }
-
-
-
     }
 }

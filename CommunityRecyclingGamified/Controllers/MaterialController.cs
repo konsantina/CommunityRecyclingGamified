@@ -2,6 +2,7 @@
 using CommunityRecyclingGamified.Models;
 using CommunityRecyclingGamified.Repositories;
 using CommunityRecyclingGamified.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CommunityRecyclingGamified.Controllers
@@ -39,7 +40,7 @@ namespace CommunityRecyclingGamified.Controllers
             return Ok(material);
         }
 
-
+        [Authorize(Roles = "Admin")]
         [HttpPost]
         public async Task<ActionResult<Material>> AddMaterial([FromBody] MaterialDto material)
         {
@@ -65,7 +66,7 @@ namespace CommunityRecyclingGamified.Controllers
 
             return CreatedAtAction(nameof(GetMaterialById), new { id = convertMaterialDtoToMaterial.Id }, convertMaterialDtoToMaterial);
         }
-
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id:int}")]
         public async Task<ActionResult<Material>> UpdateMaterial([FromBody] MaterialDto material, int id)
         {
@@ -91,7 +92,7 @@ namespace CommunityRecyclingGamified.Controllers
 
             return CreatedAtAction(nameof(GetMaterialById), new { id = convertMaterialDtoToMaterial.Id }, convertMaterialDtoToMaterial);
         }
-
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id:int}")]
 
         public async Task<IActionResult> DeleteMaterial(int id)

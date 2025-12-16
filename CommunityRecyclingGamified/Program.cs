@@ -1,4 +1,4 @@
-using CommunityRecyclingGamified.Data;
+﻿using CommunityRecyclingGamified.Data;
 using CommunityRecyclingGamified.Repositories;
 using CommunityRecyclingGamified.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
