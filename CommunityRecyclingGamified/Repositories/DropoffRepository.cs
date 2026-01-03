@@ -36,9 +36,10 @@ namespace CommunityRecyclingGamified.Repositories
                 .OrderBy(d => d.CreatedAt)
                 .ToListAsync();
         }
-        public Task<bool> UpdateAsync(Dropoff dropoff)
+        public async Task<bool> UpdateAsync(Dropoff dropoff)
         {
-            throw new NotImplementedException();
+            _context.Dropoffs.Update(dropoff);
+            return await _context.SaveChangesAsync() > 0;
         }
 
         public async Task<bool> VerifyAsync(int dropoffId, int verifierUserId)
@@ -116,10 +117,12 @@ namespace CommunityRecyclingGamified.Repositories
             return await _context.SaveChangesAsync() > 0;
         }
 
-       public async Task<IEnumerable<DropoffListItemDto>> GetByUserAsync(int userId)
+        public async Task<IEnumerable<DropoffListItemDto>> GetByUserAsync(int userId)
         {
             return await _context.Dropoffs
                 .AsNoTracking()
+                .Include(d => d.Material)
+                .Include(d => d.Neighborhood)
                 .Where(d => d.UserId == userId)
                 .OrderByDescending(d => d.CreatedAt)
                 .Select(d => new DropoffListItemDto
@@ -133,7 +136,7 @@ namespace CommunityRecyclingGamified.Repositories
                     CreatedAt = d.CreatedAt,
 
                     MaterialId = d.MaterialId,
-                    MaterialName = d.Material.Name,
+                    MaterialName = d.Material != null ? d.Material.Name : null,
 
                     NeighborhoodId = d.NeighborhoodId,
                     NeighborhoodName = d.Neighborhood != null ? d.Neighborhood.Name : null

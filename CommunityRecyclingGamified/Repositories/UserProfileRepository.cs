@@ -46,9 +46,11 @@ namespace CommunityRecyclingGamified.Repositories
             return _context.UserProfiles.FirstOrDefaultAsync(u => u.Id == id);
         }
 
-        public void Update(UserProfile user)
+        public async Task<bool> UpdateAsync(UserProfile user)
         {
-            _context.SaveChangesAsync();
+            _context.UserProfiles.Update(user);
+            return await _context.SaveChangesAsync() > 0;
         }
+
     }
 }
