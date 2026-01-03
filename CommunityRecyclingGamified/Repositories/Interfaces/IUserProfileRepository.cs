@@ -10,7 +10,7 @@ namespace CommunityRecyclingGamified.Repositories.Interfaces
         Task<UserProfile?> GetByIdAsync(int id);
         Task<UserProfile?> GetByEmailAsync(string email);
         Task<bool> AddAsync(UserProfile user);
-        void Update(UserProfile user);
+        Task<bool> UpdateAsync(UserProfile user);
         Task<bool> Delete(int id);
     }
 }

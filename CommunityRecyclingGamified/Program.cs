@@ -97,6 +97,13 @@ namespace CommunityRecyclingGamified
                    };
                });
             builder.Services.AddAuthorization();
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AngularDev", p =>
+                    p.WithOrigins("http://localhost:4200")
+                     .AllowAnyHeader()
+                     .AllowAnyMethod());
+            });
 
             var app = builder.Build();
             if (app.Environment.IsDevelopment())
@@ -106,6 +113,7 @@ namespace CommunityRecyclingGamified
             }
 
             app.UseHttpsRedirection();
+            app.UseCors("AngularDev");
             app.UseAuthentication();
             app.UseAuthorization();
 

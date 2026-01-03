@@ -123,7 +123,7 @@ namespace CommunityRecyclingGamified.Controllers
             existing.TotalPoints = userProfile.TotalPoints;
             existing.Level = userProfile.Level;
 
-            _userProfileRepository.Update(existing);
+            _userProfileRepository.UpdateAsync(existing);
 
             return Ok(existing);
         }

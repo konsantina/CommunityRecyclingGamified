@@ -6,6 +6,7 @@ using CommunityRecyclingGamified.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -76,6 +77,32 @@ public class AuthController : ControllerBase
             Email = user.Email,
             Role = user.Role.ToString(),
             Token = token
+        });
+    }
+
+    // ✅ GET: api/Auth/me
+    // Επιστρέφει τον τρέχοντα user από το token
+    [Authorize]
+    [HttpGet("me")]
+    public async Task<ActionResult<AuthResponseDto>> Me()
+    {
+        var rawUserId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(rawUserId))
+            return Unauthorized("Missing user id claim");
+
+        var userId = int.Parse(rawUserId);
+
+        var user = await _users.GetByIdAsync(userId);
+        if (user == null)
+            return Unauthorized("User not found");
+
+        return Ok(new AuthResponseDto
+        {
+            UserId = user.Id,
+            DisplayName = user.DisplayName,
+            Email = user.Email,
+            Role = user.Role.ToString(),
+            Token = "" // ✅ δεν ξαναστέλνουμε token εδώ
         });
     }
 }
