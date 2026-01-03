@@ -1,4 +1,4 @@
-﻿namespace CommunityRecyclingGamified.Repositories.Interfaces
+﻿namespace CommunityRecyclingGamified.Service
 {
     public interface IJwtTokenService
     {

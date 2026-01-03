@@ -2,6 +2,7 @@
 using global::CommunityRecyclingGamified.Dto;
 using global::CommunityRecyclingGamified.Models;
 using global::CommunityRecyclingGamified.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CommunityRecyclingGamified.Controllers
@@ -18,7 +19,10 @@ namespace CommunityRecyclingGamified.Controllers
         }
 
         // GET: api/UserPointLedger/user/5
+        [Authorize]
         [HttpGet("user/{userId:int}")]
+        [ProducesResponseType(typeof(IEnumerable<UserPointLedger>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<IEnumerable<UserPointLedger>>> GetByUser(int userId)
         {
             var entries = await _ledgerRepository.GetByUserAsync(userId);
@@ -26,7 +30,13 @@ namespace CommunityRecyclingGamified.Controllers
         }
 
         // POST: api/UserPointLedger  (optional, για manual/ admin adjustments)
+        [Authorize(Roles = "Admin")]
         [HttpPost]
+        [ProducesResponseType(typeof(UserPointLedger), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<UserPointLedger>> AddEntry([FromBody] UserPointLedgerDto dto)
         {
             if (!ModelState.IsValid)
