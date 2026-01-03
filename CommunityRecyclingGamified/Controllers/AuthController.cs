@@ -2,6 +2,7 @@
 using CommunityRecyclingGamified.Enums;
 using CommunityRecyclingGamified.Models;
 using CommunityRecyclingGamified.Repositories.Interfaces;
+using CommunityRecyclingGamified.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;

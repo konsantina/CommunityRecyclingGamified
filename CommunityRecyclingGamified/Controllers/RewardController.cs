@@ -2,6 +2,7 @@
 using CommunityRecyclingGamified.Models;
 using CommunityRecyclingGamified.Repositories;
 using CommunityRecyclingGamified.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using System.ComponentModel.DataAnnotations;
@@ -33,7 +34,14 @@ namespace CommunityRecyclingGamified.Controllers
             return Ok(reward);
         }
 
+    
+        /// Delete reward (Admin only).
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id:int}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Reward>> DeleteByIdAsync(int id)
         {
             var result = await _rewardRepository.DeleteAsync(id);
@@ -43,8 +51,15 @@ namespace CommunityRecyclingGamified.Controllers
             return NoContent();
         }
 
+        
+        /// Create reward (Admin only).
+        [Authorize(Roles = "Admin")]
         [HttpPost]
-
+        [ProducesResponseType(typeof(Reward), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<Reward>> AddReward([FromBody] RewardCreateDto reward)
         {
             if (!ModelState.IsValid)
@@ -74,8 +89,16 @@ namespace CommunityRecyclingGamified.Controllers
             return CreatedAtAction(nameof(GetRewardsById), new { id = user.Id }, user);
         }
 
+        /// Update reward (Admin only).
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id:int}")]
-       public async Task<ActionResult<Reward>> UpdateReward(RewardCreateDto reward, int id)
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        public async Task<ActionResult<Reward>> UpdateReward(RewardCreateDto reward, int id)
         {
             if (!ModelState.IsValid)
             {

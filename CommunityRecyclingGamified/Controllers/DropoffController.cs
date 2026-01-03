@@ -1,6 +1,7 @@
 ﻿using CommunityRecyclingGamified.Dto;
 using CommunityRecyclingGamified.Enums;
 using CommunityRecyclingGamified.Models;
+using CommunityRecyclingGamified.Repositories;
 using CommunityRecyclingGamified.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -25,7 +26,7 @@ namespace CommunityRecyclingGamified.Controllers
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
-            
+
             var dropoff = new Dropoff
             {
                 UserId = dto.UserId,
@@ -34,7 +35,7 @@ namespace CommunityRecyclingGamified.Controllers
                 Quantity = dto.Quantity,
                 Unit = dto.Unit,
                 Location = dto.Location,
-                Status = DropoffStatus.Recorded,  
+                Status = Enums.DropoffStatus.Recorded,
                 PointsAwarded = 0,
                 CreatedAt = DateTime.UtcNow
             };
@@ -68,5 +69,32 @@ namespace CommunityRecyclingGamified.Controllers
             var dropoffs = await _dropoffRepository.GetPendingAsync();
             return Ok(dropoffs);
         }
+
+
+        [Authorize(Roles = "Admin,Moderator")]
+        [HttpPost("{id:int}/reject")]
+        public async Task<IActionResult> Reject(int id, [FromBody] DropoffRejectDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var ok = await _dropoffRepository.RejectAsync(id, dto.VerifierUserId);
+
+            if (!ok)
+                return BadRequest("Cannot reject dropoff (not found / not recorded).");
+
+            return NoContent();
+        }
+
+
+        [Authorize]
+        [HttpGet("user/{userId:int}")]
+        public async Task<ActionResult<IEnumerable<DropoffListItemDto>>> GetByUser(int userId)
+        {
+            var items = await _dropoffRepository.GetByUserAsync(userId);
+            return Ok(items);
+        }
+
     }
 }
+

@@ -1,5 +1,6 @@
 ﻿using CommunityRecyclingGamified.Models;
 using CommunityRecyclingGamified.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CommunityRecyclingGamified.Controllers
@@ -27,7 +28,10 @@ namespace CommunityRecyclingGamified.Controllers
             return Ok(neighborhoods);
         }
 
+        [AllowAnonymous]
         [HttpGet("{id:int}")]
+        [ProducesResponseType(typeof(Neighborhood), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<Neighborhood>> GetNeighborhoodById(int id)
         {
             var result = await _neighborhoodRepository.GetByIdAsync(id);
