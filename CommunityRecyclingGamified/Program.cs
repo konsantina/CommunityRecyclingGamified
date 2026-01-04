@@ -77,6 +77,11 @@ namespace CommunityRecyclingGamified
             var audience = jwtSection["Audience"];
             var key = jwtSection["Key"];
             var keyBytes = Encoding.UTF8.GetBytes(key);
+            builder.Services.AddControllers()
+            .AddJsonOptions(o =>
+            {
+                o.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+            });
 
             builder.Services
                .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)

@@ -12,6 +12,9 @@ namespace CommunityRecyclingGamified.Repositories.Interfaces
         Task<bool> VerifyAsync(int dropoffId, int verifierUserId);
         Task<bool> RejectAsync(int dropoffId, int verifierUserId);
         Task<IEnumerable<DropoffListItemDto>> GetByUserAsync(int userId);
+        Task<bool> UpdateByOwnerAsync(int id, int userId, DropoffUpdateDto dto);
+        Task<bool> DeleteByOwnerAsync(int id, int userId);
+
 
     }
 }

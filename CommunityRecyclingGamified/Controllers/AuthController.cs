@@ -59,6 +59,7 @@ public class AuthController : ControllerBase
     }
 
     [AllowAnonymous]
+    //api/auth/login
     [HttpPost("login")]
     public async Task<ActionResult<AuthResponseDto>> Login([FromBody] LoginDto dto)
     {

@@ -58,14 +58,22 @@ namespace CommunityRecyclingGamified.Controllers
         }
 
         // GET: api/Dropoff/{id}
-        [AllowAnonymous]
+        [Authorize(Roles = "Admin,Moderator,User")]
         [HttpGet("{id:int}")]
         public async Task<ActionResult<Dropoff>> GetById(int id)
         {
             var dropoff = await _dropoffRepository.GetByIdAsync(id);
             if (dropoff == null) return NotFound();
+
+            var userId = GetUserId();
+            var isAdmin = User.IsInRole("Admin") || User.IsInRole("Moderator");
+
+            if (!isAdmin && dropoff.UserId != userId)
+                return Forbid();
+
             return Ok(dropoff);
         }
+
 
         // GET: api/Dropoff/pending
         [Authorize(Roles = "Admin,Moderator")]
@@ -94,12 +102,10 @@ namespace CommunityRecyclingGamified.Controllers
         // POST: api/Dropoff/{id}/reject
         [Authorize(Roles = "Admin,Moderator")]
         [HttpPost("{id:int}/reject")]
-        public async Task<IActionResult> Reject(int id, [FromBody] DropoffRejectDto dto)
+        public async Task<IActionResult> Reject(int id)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(ModelState);
-
-            var verifierUserId = GetUserId();
+            var raw = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var verifierUserId = int.Parse(raw!);
 
             var ok = await _dropoffRepository.RejectAsync(id, verifierUserId);
 
@@ -110,7 +116,7 @@ namespace CommunityRecyclingGamified.Controllers
         }
 
         // GET: api/Dropoff/my
-        [Authorize]
+        [Authorize(Roles = "Admin,Moderator,User")]
         [HttpGet("my")]
         public async Task<ActionResult<IEnumerable<DropoffListItemDto>>> GetMy()
         {
@@ -120,12 +126,40 @@ namespace CommunityRecyclingGamified.Controllers
         }
 
         // GET: api/Dropoff/user/{userId}
-        [Authorize(Roles = "Admin,Moderator")]
+        [Authorize(Roles = "Admin,Moderator,User")]
         [HttpGet("user/{userId:int}")]
         public async Task<ActionResult<IEnumerable<DropoffListItemDto>>> GetByUser(int userId)
         {
             var items = await _dropoffRepository.GetByUserAsync(userId);
             return Ok(items);
         }
+
+        [Authorize(Roles = "User")]
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> Update(int id, [FromBody] DropoffUpdateDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var userId = GetUserId();
+            var ok = await _dropoffRepository.UpdateByOwnerAsync(id, userId, dto);
+
+            if (!ok) return BadRequest("Cannot update dropoff (not found / not owner / not editable status).");
+
+            return NoContent();
+        }
+
+        [Authorize(Roles = "User")]
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> Delete(int id)
+        {
+            var userId = GetUserId();
+            var ok = await _dropoffRepository.DeleteByOwnerAsync(id, userId);
+
+            if (!ok) return BadRequest("Cannot delete dropoff (not found / not owner / not deletable status).");
+
+            return NoContent();
+        }
+
     }
 }

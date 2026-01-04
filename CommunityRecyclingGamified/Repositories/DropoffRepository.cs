@@ -144,6 +144,43 @@ namespace CommunityRecyclingGamified.Repositories
                 .ToListAsync();
         }
 
+        public async Task<bool> UpdateByOwnerAsync(int id, int userId, DropoffUpdateDto dto)
+        {
+            var dropoff = await _context.Dropoffs.FindAsync(id);
+            if (dropoff == null) return false;
+
+            if (dropoff.UserId != userId) return false;
+
+            if (dropoff.Status != DropoffStatus.Recorded &&
+                dropoff.Status != DropoffStatus.Flagged)
+                return false;
+
+            dropoff.MaterialId = dto.MaterialId;
+            dropoff.NeighborhoodId = dto.NeighborhoodId;
+            dropoff.Quantity = dto.Quantity;
+            dropoff.Unit = dto.Unit;
+            dropoff.Location = dto.Location;
+
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<bool> DeleteByOwnerAsync(int id, int userId)
+        {
+            var dropoff = await _context.Dropoffs.FindAsync(id);
+            if (dropoff == null) return false;
+
+            if (dropoff.UserId != userId) return false;
+
+            if (dropoff.Status != DropoffStatus.Recorded &&
+                dropoff.Status != DropoffStatus.Flagged)
+                return false;
+
+            _context.Dropoffs.Remove(dropoff);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
     }
 }
 
