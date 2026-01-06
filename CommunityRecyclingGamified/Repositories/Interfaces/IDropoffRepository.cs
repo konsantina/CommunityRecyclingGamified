@@ -14,7 +14,9 @@ namespace CommunityRecyclingGamified.Repositories.Interfaces
         Task<IEnumerable<DropoffListItemDto>> GetByUserAsync(int userId);
         Task<bool> UpdateByOwnerAsync(int id, int userId, DropoffUpdateDto dto);
         Task<bool> DeleteByOwnerAsync(int id, int userId);
-
+        Task<int> CountVerifiedByUserAsync(int userId);
+        Task<decimal> SumVerifiedVolumeByUserAsync(int userId);   // αν quantity είναι decimal
+        Task<List<DateOnly>> GetVerifiedDropoffDatesAsync(int userId);
 
     }
 }

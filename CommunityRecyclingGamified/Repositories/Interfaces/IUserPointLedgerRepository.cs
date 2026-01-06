@@ -1,4 +1,5 @@
-﻿using CommunityRecyclingGamified.Models;
+﻿using CommunityRecyclingGamified.Dto;
+using CommunityRecyclingGamified.Models;
 
 namespace CommunityRecyclingGamified.Repositories.Interfaces
 {
@@ -6,5 +7,9 @@ namespace CommunityRecyclingGamified.Repositories.Interfaces
     {
         Task<IEnumerable<UserPointLedger>> GetByUserAsync(int userId);
         Task<bool> AddAsync(UserPointLedger entry);
+        Task<List<LeaderboardEntryDto>> GetLeaderboardAsync(int? neighborhoodId = null);
+        Task<int> GetTotalPointsAsync(int userId);
+        Task<bool> ExistsForDropoffAsync(int userId, int dropoffId);
+
     }
 }

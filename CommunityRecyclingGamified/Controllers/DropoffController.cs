@@ -1,6 +1,7 @@
 ﻿using CommunityRecyclingGamified.Dto;
 using CommunityRecyclingGamified.Models;
 using CommunityRecyclingGamified.Repositories.Interfaces;
+using CommunityRecyclingGamified.Services.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -11,11 +12,13 @@ namespace CommunityRecyclingGamified.Controllers
     [Route("api/[controller]")]
     public class DropoffController : ControllerBase
     {
-        private readonly IDropoffRepository _dropoffRepository;
+        private readonly IDropoffRepository _dropoffRepository; 
+        private readonly IGamificationService _gamificationService; 
 
-        public DropoffController(IDropoffRepository dropoffRepository)
+        public DropoffController(IDropoffRepository dropoffRepository, IGamificationService gamificationService)
         {
             _dropoffRepository = dropoffRepository;
+            _gamificationService = gamificationService;
         }
 
         private int GetUserId()
@@ -92,12 +95,14 @@ namespace CommunityRecyclingGamified.Controllers
             var verifierUserId = GetUserId();
 
             var ok = await _dropoffRepository.VerifyAsync(id, verifierUserId);
-
             if (!ok)
                 return BadRequest("Cannot verify dropoff (not found / not recorded / inactive material).");
 
+            await _gamificationService.OnDropoffVerifiedAsync(id);
+
             return NoContent();
         }
+
 
         // POST: api/Dropoff/{id}/reject
         [Authorize(Roles = "Admin,Moderator")]

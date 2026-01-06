@@ -181,6 +181,41 @@ namespace CommunityRecyclingGamified.Repositories
             return true;
         }
 
+        public async Task<int> CountVerifiedByUserAsync(int userId)
+        {
+            return await _context.Dropoffs
+                .AsNoTracking()
+                .Where(d => d.UserId == userId && d.Status == DropoffStatus.Verified)
+                .CountAsync();
+        }
+
+        public async Task<decimal> SumVerifiedVolumeByUserAsync(int userId)
+        {
+            // ⚠️ Αν έχεις διαφορετικές μονάδες (kg/pcs), εδώ χρειάζεται normalization.
+            // Για τώρα υποθέτουμε ότι το Quantity είναι “ενιαίο” (π.χ. πάντα kg).
+            return await _context.Dropoffs
+                .AsNoTracking()
+                .Where(d => d.UserId == userId && d.Status == DropoffStatus.Verified)
+                .SumAsync(d => (decimal?)d.Quantity) ?? 0m;
+        }
+
+        public async Task<List<DateOnly>> GetVerifiedDropoffDatesAsync(int userId)
+        {
+            // ✅ Αν δεν έχεις VerifiedAt, πάρε UpdatedAt ή CreatedAt.
+            // Εδώ υποθέτω ότι έχεις UpdatedAt.
+            var dates = await _context.Dropoffs
+                .AsNoTracking()
+                .Where(d => d.UserId == userId && d.Status == DropoffStatus.Verified)
+                .Select(d => d.CreatedAt)
+                .ToListAsync();
+
+            return dates
+                .Select(d => DateOnly.FromDateTime(d.ToUniversalTime().Date))
+                .Distinct()
+                .OrderBy(x => x)
+                .ToList();
+        }
+
     }
 }
 

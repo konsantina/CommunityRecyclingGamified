@@ -3,13 +3,15 @@ using CommunityRecyclingGamified.Models;
 using CommunityRecyclingGamified.Repositories;
 using CommunityRecyclingGamified.Repositories.Interfaces;
 using CommunityRecyclingGamified.Service;
+using CommunityRecyclingGamified.Services;
+using CommunityRecyclingGamified.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.SqlServer;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using Microsoft.OpenApi.Models;
+using System.Text;
 
 
 namespace CommunityRecyclingGamified
@@ -70,6 +72,10 @@ namespace CommunityRecyclingGamified
             builder.Services.AddScoped<IRedemptionRepository, RedemptionRepository>();
             builder.Services.AddScoped<IPasswordHasher<UserProfile>, PasswordHasher<UserProfile>>();
             builder.Services.AddScoped<IJwtTokenService, JwtTokenService>();
+            builder.Services.AddScoped<IUserBadgeRepository, UserBadgeRepository>();
+            builder.Services.AddScoped<IGamificationService, GamificationService>();
+            builder.Services.AddScoped<IBadgeRepository, BadgeRepository>();
+
 
             // FIX: Read JWT settings and key from configuration
             var jwtSection = builder.Configuration.GetSection("Jwt");

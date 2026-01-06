@@ -62,5 +62,17 @@ namespace CommunityRecyclingGamified.Controllers
                 new { userId = entry.UserId },
                 entry);
         }
+
+        // GET: api/UserPointLedger/leaderboard
+        [Authorize]
+        [HttpGet("leaderboard")]
+        [ProducesResponseType(typeof(IEnumerable<LeaderboardEntryDto>), StatusCodes.Status200OK)]
+        public async Task<ActionResult<IEnumerable<LeaderboardEntryDto>>> GetLeaderboard(
+            [FromQuery] int? neighborhoodId)
+        {
+            var leaderboard = await _ledgerRepository.GetLeaderboardAsync(neighborhoodId);
+            return Ok(leaderboard);
+        }
+
     }
 }

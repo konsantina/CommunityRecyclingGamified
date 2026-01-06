@@ -52,5 +52,27 @@ namespace CommunityRecyclingGamified.Repositories
             return await _context.SaveChangesAsync() > 0;
         }
 
+        public async Task<List<BadgeDto>> GetMyBadgesAsync(int userId)
+        {
+            return await _context.Badges
+                .AsNoTracking()
+                .Where(b => b.IsActive)
+                .Select(b => new BadgeDto
+                {
+                    Id = b.Id,
+                    Name = b.Name ?? "",
+                    Description = b.Description,
+                    IconUrl = b.IconUrl,
+                    RuleType = b.RuleType,
+
+                    // αν υπάρχει UserBadge για τον χρήστη → unlocked
+                    Unlocked = b.UserBadges.Any(ub => ub.UserId == userId),
+
+                    // progress/target για τώρα null (UI-ready)
+                    Progress = null,
+                    Target = null
+                })
+                .ToListAsync();
+        }
     }
 }

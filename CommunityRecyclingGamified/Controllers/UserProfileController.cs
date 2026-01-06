@@ -3,6 +3,7 @@ using CommunityRecyclingGamified.Models;
 using CommunityRecyclingGamified.Repositories.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace CommunityRecyclingGamified.Controllers
 {
@@ -143,6 +144,21 @@ namespace CommunityRecyclingGamified.Controllers
                 return NotFound();
 
             return NoContent();
+        }
+
+        [Authorize]
+        [HttpGet("me/badges")]
+        public async Task<IActionResult> GetMyBadges()
+        {
+            var userIdClaim =
+                User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
+                User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+
+            if (!int.TryParse(userIdClaim, out var userId))
+                return Unauthorized();
+
+            var badges = await _userProfileRepository.GetMyBadgesAsync(userId);
+            return Ok(badges);
         }
     }
 }
