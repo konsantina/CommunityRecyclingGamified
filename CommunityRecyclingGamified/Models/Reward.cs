@@ -18,7 +18,10 @@ namespace CommunityRecyclingGamified.Models
         [Required]
         public int CostPoints { get; set; }
 
-        public int? Stock { get; set; } // null = unlimited
+        [Required]
+        [Range(0, int.MaxValue)]
+        public int Stock { get; set; }
+
 
         public DateTime? ValidFrom { get; set; }
         public DateTime? ValidTo { get; set; }

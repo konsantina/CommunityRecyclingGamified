@@ -1,4 +1,5 @@
 ﻿using CommunityRecyclingGamified.Data;
+using CommunityRecyclingGamified.Dto;
 using CommunityRecyclingGamified.Enums;
 using CommunityRecyclingGamified.Models;
 using CommunityRecyclingGamified.Repositories.Interfaces;
@@ -38,15 +39,32 @@ namespace CommunityRecyclingGamified.Repositories
         }
 
 
-        public async Task<IEnumerable<Redemption>> GetPendingAsync()
+        public async Task<IEnumerable<PendingRedemptionDto>> GetPendingAsync()
         {
             return await _context.Redemptions
+                .AsNoTracking()
                 .Include(r => r.UserProfile)
                 .Include(r => r.Reward)
-                .Where(r => r.Status == RedemptionStatus.Pending)
-                .OrderBy(r => r.CreatedAt)
+                .Where(r => r.Status == RedemptionStatus.Pending) // προσαρμόζεις στο enum/string σου
+                .OrderByDescending(r => r.CreatedAt)
+                .Select(r => new PendingRedemptionDto
+                {
+                    Id = r.Id,
+
+                    UserId = r.UserId,
+                    UserName = (r.UserProfile.DisplayName ?? r.UserProfile.Email ?? "").Trim(),
+
+                    RewardId = r.RewardId,
+                    RewardTitle = (r.Reward.Title ?? "").Trim(),
+
+                    Status = r.Status.ToString(),
+                    CostSnapshot = r.CostSnapshot,
+                    Code = r.Code,
+                    CreatedAt = r.CreatedAt
+                })
                 .ToListAsync();
         }
+
 
         public async Task<bool> ApproveAsync(int redemptionId, int approverUserId)
         {
@@ -70,7 +88,7 @@ namespace CommunityRecyclingGamified.Repositories
             if (redemption.Reward.ValidTo.HasValue && redemption.Reward.ValidTo < DateTime.UtcNow)
                 return false;
 
-            if (redemption.Reward.Stock.HasValue && redemption.Reward.Stock <= 0)
+            if (redemption.Reward.Stock <= 0)
                 return false;
 
             // Points check
@@ -80,7 +98,7 @@ namespace CommunityRecyclingGamified.Repositories
 
             redemption.UserProfile.TotalPoints -= cost;
 
-            if (redemption.Reward.Stock.HasValue)
+            if (redemption.Reward.Stock > 0)
                 redemption.Reward.Stock -= 1;
 
             redemption.Status = RedemptionStatus.Approved;
@@ -140,7 +158,6 @@ namespace CommunityRecyclingGamified.Repositories
 
             return await _context.SaveChangesAsync() > 0;
         }
-
 
     }
 }

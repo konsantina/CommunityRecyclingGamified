@@ -34,7 +34,7 @@ namespace CommunityRecyclingGamified.Models
         public DateTime? CancelledAt { get; set; }
 
         [MaxLength(80)]
-        public string Code { get; set; } // coupon/qr code
+        public string? Code { get; set; } // coupon/qr code
 
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

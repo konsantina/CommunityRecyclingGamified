@@ -41,8 +41,15 @@ namespace CommunityRecyclingGamified.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            // 1) Get User
-            var user = await _userProfileRepository.GetByIdAsync(dto.UserId);
+            var userIdClaim =
+            User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ??
+            User.FindFirst("sub")?.Value;
+
+            if (!int.TryParse(userIdClaim, out var userId))
+                return Unauthorized("Invalid user id");
+
+            var user = await _userProfileRepository.GetByIdAsync(userId);
+
             if (user == null)
                 return NotFound("User not found");
 
@@ -61,7 +68,7 @@ namespace CommunityRecyclingGamified.Controllers
             if (reward.ValidTo.HasValue && reward.ValidTo < DateTime.UtcNow)
                 return BadRequest("Reward has expired");
 
-            if (reward.Stock.HasValue && reward.Stock <= 0)
+            if (reward.Stock > 0 && reward.Stock <= 0)
                 return BadRequest("Reward out of stock");
 
             if (user.TotalPoints < reward.CostPoints)
@@ -127,16 +134,14 @@ namespace CommunityRecyclingGamified.Controllers
         /// <summary>
         /// Get all pending redemptions (Admin only).
         /// </summary>
-        [HttpGet("pending")]
         [Authorize(Roles = "Admin")]
-        [ProducesResponseType(typeof(IEnumerable<Redemption>), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(StatusCodes.Status403Forbidden)]
-        public async Task<ActionResult<IEnumerable<Redemption>>> GetPending()
+        [HttpGet("pending")]
+        public async Task<ActionResult<IEnumerable<PendingRedemptionDto>>> GetPending()
         {
-            var redemptions = await _redemptionRepository.GetPendingAsync();
-            return Ok(redemptions);
+            var list = await _redemptionRepository.GetPendingAsync();
+            return Ok(list);
         }
+
 
         /// <summary>
         /// Get redemptions for a given user (Authenticated).
@@ -192,4 +197,6 @@ namespace CommunityRecyclingGamified.Controllers
             return NoContent();
         }
     }
-}
+
+
+    }

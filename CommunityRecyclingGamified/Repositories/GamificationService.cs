@@ -27,42 +27,72 @@ namespace CommunityRecyclingGamified.Services
 
         public async Task OnDropoffVerifiedAsync(int dropoffId)
         {
+            // 1) Πάρε το dropoff για να βρούμε userId
             var dropoff = await _dropoffRepo.GetByIdAsync(dropoffId);
             if (dropoff == null) return;
 
+            // (Optional safety) αν θες, άστο. Αν σου έκανε θέμα πριν, βγάλ' το.
+            if (dropoff.Status != DropoffStatus.Verified) return;
 
             var userId = dropoff.UserId;
 
+            // 2) Πάρε τα ενεργά badges
             var badges = await _badgeRepo.GetActiveBadgesAsync();
-            if (badges.Count == 0) return;
+            if (badges == null || badges.Count == 0) return;
 
-            // rank από leaderboard (0 αν δεν βρεθεί)
+            // 3) Metrics (μια φορά)
+            var verifiedCount = await _dropoffRepo.CountVerifiedByUserAsync(userId);
+            var totalVolume = await _dropoffRepo.SumVerifiedVolumeByUserAsync(userId);
+            var dates = await _dropoffRepo.GetVerifiedDropoffDatesAsync(userId);
+            var streakDays = CalculateStreakDays(dates);
+
+            // 4) Rank (leaderboard)
             var leaderboard = await _ledgerRepo.GetLeaderboardAsync();
-            var rank = leaderboard.FindIndex(x => x.UserId == userId) + 1;
-            if (rank <= 0) return;
+            var rank = (leaderboard == null) ? 0 : leaderboard.FindIndex(x => x.UserId == userId) + 1; // 1-based
 
+            // 5) Evaluate & award
             foreach (var badge in badges)
             {
-                if (badge.RuleType != BadgeRuleType.Rank)
-                    continue;
+                if (badge == null) continue;
 
+                // Αν το έχει ήδη, skip
                 if (await _userBadgeRepo.ExistsAsync(userId, badge.Id))
                     continue;
 
-                // RuleParams: {"rank":3} => Top 3
-                var top = ReadInt(badge.RuleParams, "rank");
-                if (top <= 0) continue;
-
-                if (rank <= top)
+                var unlocked = badge.RuleType switch
                 {
-                    await _userBadgeRepo.AddAsync(new UserBadge
-                    {
-                        UserId = userId,
-                        BadgeId = badge.Id,
-                        UnlockedAt = DateTime.UtcNow
-                    });
-                }
+                    BadgeRuleType.Count => verifiedCount >= ReadInt(badge.RuleParams, "count"),
+                    BadgeRuleType.Volume => totalVolume >= ReadDecimal(badge.RuleParams, "min"),
+                    BadgeRuleType.Streak => streakDays >= ReadInt(badge.RuleParams, "days"),
+                    BadgeRuleType.Rank => rank > 0 && rank <= ReadInt(badge.RuleParams, "rank"),
+                    _ => false
+                };
+
+                if (!unlocked) continue;
+
+                await _userBadgeRepo.AddAsync(new UserBadge
+                {
+                    UserId = userId,
+                    BadgeId = badge.Id,
+                    UnlockedAt = DateTime.UtcNow
+                });
             }
+        }
+
+        private static int CalculateStreakDays(List<DateOnly>? dates)
+        {
+            if (dates == null || dates.Count == 0) return 0;
+
+            var set = new HashSet<DateOnly>(dates);
+            var current = dates.Max(); // streak μέχρι την τελευταία verified μέρα
+
+            var streak = 0;
+            while (set.Contains(current))
+            {
+                streak++;
+                current = current.AddDays(-1);
+            }
+            return streak;
         }
 
         private static int ReadInt(string? json, string key)
@@ -70,14 +100,34 @@ namespace CommunityRecyclingGamified.Services
             try
             {
                 if (string.IsNullOrWhiteSpace(json)) return 0;
+
                 using var doc = JsonDocument.Parse(json);
                 if (!doc.RootElement.TryGetProperty(key, out var el)) return 0;
+
                 if (el.ValueKind == JsonValueKind.Number && el.TryGetInt32(out var v)) return v;
                 return 0;
             }
             catch
             {
                 return 0;
+            }
+        }
+
+        private static decimal ReadDecimal(string? json, string key)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(json)) return 0m;
+
+                using var doc = JsonDocument.Parse(json);
+                if (!doc.RootElement.TryGetProperty(key, out var el)) return 0m;
+
+                if (el.ValueKind == JsonValueKind.Number && el.TryGetDecimal(out var v)) return v;
+                return 0m;
+            }
+            catch
+            {
+                return 0m;
             }
         }
     }

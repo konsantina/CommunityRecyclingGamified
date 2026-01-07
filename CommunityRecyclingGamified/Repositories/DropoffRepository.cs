@@ -191,8 +191,8 @@ namespace CommunityRecyclingGamified.Repositories
 
         public async Task<decimal> SumVerifiedVolumeByUserAsync(int userId)
         {
-            // ⚠️ Αν έχεις διαφορετικές μονάδες (kg/pcs), εδώ χρειάζεται normalization.
-            // Για τώρα υποθέτουμε ότι το Quantity είναι “ενιαίο” (π.χ. πάντα kg).
+            // ⚠️ Εδώ ΔΕΝ μετατρέπουμε Kg/Pcs. Το αφήνουμε raw.
+            // Αν θες ξεχωριστά badges για Kg και Pcs, το κάνουμε μετά.
             return await _context.Dropoffs
                 .AsNoTracking()
                 .Where(d => d.UserId == userId && d.Status == DropoffStatus.Verified)
@@ -201,16 +201,16 @@ namespace CommunityRecyclingGamified.Repositories
 
         public async Task<List<DateOnly>> GetVerifiedDropoffDatesAsync(int userId)
         {
-            // ✅ Αν δεν έχεις VerifiedAt, πάρε UpdatedAt ή CreatedAt.
-            // Εδώ υποθέτω ότι έχεις UpdatedAt.
             var dates = await _context.Dropoffs
                 .AsNoTracking()
-                .Where(d => d.UserId == userId && d.Status == DropoffStatus.Verified)
-                .Select(d => d.CreatedAt)
+                .Where(d => d.UserId == userId
+                         && d.Status == DropoffStatus.Verified
+                         && d.VerifiedAt != null)
+                .Select(d => d.VerifiedAt!.Value)
                 .ToListAsync();
 
             return dates
-                .Select(d => DateOnly.FromDateTime(d.ToUniversalTime().Date))
+                .Select(d => DateOnly.FromDateTime(d.Date))
                 .Distinct()
                 .OrderBy(x => x)
                 .ToList();

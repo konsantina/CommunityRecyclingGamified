@@ -14,5 +14,6 @@ namespace CommunityRecyclingGamified.Repositories.Interfaces
         Task<bool> UpdateAsync(UserProfile user);
         Task<bool> Delete(int id);
         Task<List<BadgeDto>> GetMyBadgesAsync(int userId);
+
     }
 }

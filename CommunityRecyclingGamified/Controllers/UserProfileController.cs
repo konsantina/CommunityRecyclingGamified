@@ -160,5 +160,7 @@ namespace CommunityRecyclingGamified.Controllers
             var badges = await _userProfileRepository.GetMyBadgesAsync(userId);
             return Ok(badges);
         }
+
+
     }
 }
