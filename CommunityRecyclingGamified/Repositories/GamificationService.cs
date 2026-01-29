@@ -31,7 +31,6 @@ namespace CommunityRecyclingGamified.Services
             var dropoff = await _dropoffRepo.GetByIdAsync(dropoffId);
             if (dropoff == null) return;
 
-            // (Optional safety) αν θες, άστο. Αν σου έκανε θέμα πριν, βγάλ' το.
             if (dropoff.Status != DropoffStatus.Verified) return;
 
             var userId = dropoff.UserId;
@@ -55,7 +54,6 @@ namespace CommunityRecyclingGamified.Services
             {
                 if (badge == null) continue;
 
-                // Αν το έχει ήδη, skip
                 if (await _userBadgeRepo.ExistsAsync(userId, badge.Id))
                     continue;
 
@@ -84,7 +82,7 @@ namespace CommunityRecyclingGamified.Services
             if (dates == null || dates.Count == 0) return 0;
 
             var set = new HashSet<DateOnly>(dates);
-            var current = dates.Max(); // streak μέχρι την τελευταία verified μέρα
+            var current = dates.Max(); 
 
             var streak = 0;
             while (set.Contains(current))

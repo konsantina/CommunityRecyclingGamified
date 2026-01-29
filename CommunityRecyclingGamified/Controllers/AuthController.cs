@@ -103,7 +103,7 @@ public class AuthController : ControllerBase
             DisplayName = user.DisplayName,
             Email = user.Email,
             Role = user.Role.ToString(),
-            Token = "" // ✅ δεν ξαναστέλνουμε token εδώ
+            Token = "" 
         });
     }
 }

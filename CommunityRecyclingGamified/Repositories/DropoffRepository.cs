@@ -191,8 +191,6 @@ namespace CommunityRecyclingGamified.Repositories
 
         public async Task<decimal> SumVerifiedVolumeByUserAsync(int userId)
         {
-            // ⚠️ Εδώ ΔΕΝ μετατρέπουμε Kg/Pcs. Το αφήνουμε raw.
-            // Αν θες ξεχωριστά badges για Kg και Pcs, το κάνουμε μετά.
             return await _context.Dropoffs
                 .AsNoTracking()
                 .Where(d => d.UserId == userId && d.Status == DropoffStatus.Verified)

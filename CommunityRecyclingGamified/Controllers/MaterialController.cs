@@ -71,8 +71,6 @@ namespace CommunityRecyclingGamified.Controllers
                 CreatedAt = DateTime.UtcNow
             };
 
-            // Σημείωση: κρατάω τη δική σου υπογραφή (bool return).
-            // Αν η AddMaterial είναι sync, άστο έτσι. Αν είναι async, κάν' το await.
             var isAdded = _materialRepository.AddMaterial(entity);
 
             if (!isAdded)
@@ -107,12 +105,10 @@ namespace CommunityRecyclingGamified.Controllers
                 CreatedAt = DateTime.UtcNow
             };
 
-            // Σημείωση: η δική σου UpdateAsync επιστρέφει κάτι που το λες isAdded.
-            // Το κρατάω, αλλά ιδανικά θα ήταν await Task<bool>.
             var updated = _materialRepository.UpdateAsync(entity, id);
 
             if (!updated)
-                return NotFound(); // ή 500 αν εσύ το θεωρείς failure, αλλά NotFound είναι πιο σωστό.
+                return NotFound();
 
             return Ok(entity);
         }

@@ -19,7 +19,6 @@ namespace CommunityRecyclingGamified.Repositories
             return await _context.SaveChangesAsync() > 0;
         }
 
-        // ✅ ADMIN: φέρνει ΟΛΑ
         public async Task<IEnumerable<Reward>> GetAllAsync()
         {
             return await _context.Rewards
@@ -27,7 +26,6 @@ namespace CommunityRecyclingGamified.Repositories
                 .ToListAsync();
         }
 
-        // ✅ USER: φέρνει μόνο διαθέσιμα (Active + μέσα σε dates + stock>0)
         public async Task<IEnumerable<Reward>> GetAllActiveAsync()
         {
             var now = DateTime.UtcNow;
@@ -36,7 +34,7 @@ namespace CommunityRecyclingGamified.Repositories
                 .Where(r => r.IsActive)
                 .Where(r => !r.ValidFrom.HasValue || r.ValidFrom.Value <= now)
                 .Where(r => !r.ValidTo.HasValue || r.ValidTo.Value >= now)
-                .Where(r => r.Stock > 0) // αν θες stock πάντα required, δες παρακάτω
+                .Where(r => r.Stock > 0)
                 .OrderByDescending(r => r.Id)
                 .ToListAsync();
         }

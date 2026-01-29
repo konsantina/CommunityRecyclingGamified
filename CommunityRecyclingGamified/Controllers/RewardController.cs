@@ -99,7 +99,7 @@ namespace CommunityRecyclingGamified.Controllers
         [HttpGet("admin")]
         public async Task<IActionResult> GetAllAdmin()
         {
-            var rewards = await _rewardRepository.GetAllActiveAsync(); // ή GetAllAsync αν φτιάξεις ξεχωριστό
+            var rewards = await _rewardRepository.GetAllActiveAsync();
             return Ok(rewards);
         }
 

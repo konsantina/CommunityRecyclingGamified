@@ -45,7 +45,7 @@ namespace CommunityRecyclingGamified.Repositories
                 .AsNoTracking()
                 .Include(r => r.UserProfile)
                 .Include(r => r.Reward)
-                .Where(r => r.Status == RedemptionStatus.Pending) // προσαρμόζεις στο enum/string σου
+                .Where(r => r.Status == RedemptionStatus.Pending) 
                 .OrderByDescending(r => r.CreatedAt)
                 .Select(r => new PendingRedemptionDto
                 {

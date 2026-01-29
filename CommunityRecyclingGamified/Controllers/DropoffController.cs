@@ -41,7 +41,7 @@ namespace CommunityRecyclingGamified.Controllers
 
             var dropoff = new Dropoff
             {
-                UserId = userId,                 // ✅ από token
+                UserId = userId,                
                 MaterialId = dto.MaterialId,
                 NeighborhoodId = dto.NeighborhoodId,
                 Quantity = dto.Quantity,

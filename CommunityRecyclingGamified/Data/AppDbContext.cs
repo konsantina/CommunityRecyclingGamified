@@ -26,7 +26,6 @@ namespace CommunityRecyclingGamified.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // -------- UserProfile --------
             modelBuilder.Entity<UserProfile>(e =>
             {
                 e.HasIndex(u => u.Email).IsUnique();
@@ -38,7 +37,6 @@ namespace CommunityRecyclingGamified.Data
                     .OnDelete(DeleteBehavior.SetNull);
             });
 
-            // -------- Material --------
             modelBuilder.Entity<Material>(e =>
             {
                 e.Property(m => m.PointFactor).HasPrecision(10, 3);
@@ -46,7 +44,6 @@ namespace CommunityRecyclingGamified.Data
                 e.Property(m => m.Name).HasMaxLength(60).IsRequired();
             });
 
-            // -------- Dropoff --------
             modelBuilder.Entity<Dropoff>(e =>
             {
                 e.Property(d => d.Quantity).HasPrecision(12, 3);
@@ -76,7 +73,6 @@ namespace CommunityRecyclingGamified.Data
                 e.HasIndex(d => new { d.NeighborhoodId, d.CreatedAt });
             });
 
-            // -------- Badge --------
             modelBuilder.Entity<Badge>(e =>
             {
                 e.HasIndex(b => b.Name).IsUnique();
@@ -84,7 +80,6 @@ namespace CommunityRecyclingGamified.Data
                 e.Property(b => b.IconUrl).HasMaxLength(200);
             });
 
-            // -------- UserBadge (User N-M Badge) --------
             modelBuilder.Entity<UserBadge>(e =>
             {
                 e.HasIndex(ub => new { ub.UserId, ub.BadgeId }).IsUnique();
@@ -99,7 +94,6 @@ namespace CommunityRecyclingGamified.Data
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // -------- Reward --------
             modelBuilder.Entity<Reward>(e =>
             {
                 e.Property(r => r.Title).HasMaxLength(120).IsRequired();
@@ -108,7 +102,6 @@ namespace CommunityRecyclingGamified.Data
                 e.HasIndex(r => r.IsActive);
             });
 
-            // -------- Redemption --------
             modelBuilder.Entity<Redemption>(e =>
             {
                 e.HasOne(r => r.UserProfile)
@@ -130,7 +123,6 @@ namespace CommunityRecyclingGamified.Data
                 e.HasIndex(r => r.CreatedAt);
             });
 
-            // -------- UserPointLedger --------
             modelBuilder.Entity<UserPointLedger>(e =>
             {
                 e.HasOne(l => l.UserProfile)
@@ -142,7 +134,6 @@ namespace CommunityRecyclingGamified.Data
                 e.HasIndex(l => new { l.UserId, l.CreatedAt });
             });
 
-            // -------- Neighborhood --------
             modelBuilder.Entity<Neighborhood>(e =>
             {
                 e.HasIndex(n => n.Code).IsUnique();
@@ -150,7 +141,6 @@ namespace CommunityRecyclingGamified.Data
                 e.Property(n => n.Code).HasMaxLength(60).IsRequired();
             });
 
-            // -------- NeighborhoodScore --------
             modelBuilder.Entity<NeighborhoodScore>(e =>
             {
                 e.Property(s => s.PeriodKey).HasMaxLength(20).IsRequired();
@@ -161,7 +151,6 @@ namespace CommunityRecyclingGamified.Data
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // -------- LevelRule --------
             modelBuilder.Entity<LevelRule>(e =>
             {
                 e.HasIndex(l => l.LevelName).IsUnique();

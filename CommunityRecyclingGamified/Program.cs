@@ -20,29 +20,21 @@ namespace CommunityRecyclingGamified
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // ----------------------------
-            // DB
-            // ----------------------------
+          
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-            // ----------------------------
-            // Controllers + JSON
-            // (IgnoreCycles για να μην σκάει σε navigation props)
-            // ----------------------------
+            
             builder.Services.AddControllers()
                 .AddJsonOptions(o =>
                 {
                     o.JsonSerializerOptions.ReferenceHandler =
                         System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
 
-                    // Αν θες camelCase σε JSON (προαιρετικό):
-                    // o.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+                   
                 });
 
-            // ----------------------------
-            // CORS (ONE policy)
-            // ----------------------------
+            
             builder.Services.AddCors(options =>
             {
                 options.AddPolicy("AngularDev", p =>
@@ -52,9 +44,7 @@ namespace CommunityRecyclingGamified
                 );
             });
 
-            // ----------------------------
-            // Swagger + JWT
-            // ----------------------------
+            
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
             {
@@ -90,9 +80,7 @@ namespace CommunityRecyclingGamified
                 });
             });
 
-            // ----------------------------
             // DI (Repositories / Services)
-            // ----------------------------
             builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
             builder.Services.AddScoped<IMaterialRepository, MaterialRepository>();
             builder.Services.AddScoped<INeighborhoodRepository, NeighborhoodRepository>();
@@ -107,9 +95,7 @@ namespace CommunityRecyclingGamified
             builder.Services.AddScoped<IBadgeRepository, BadgeRepository>();
             builder.Services.AddScoped<IPointsRepository, PointsRepository>();
 
-            // ----------------------------
             // JWT Auth
-            // ----------------------------
             var jwtSection = builder.Configuration.GetSection("Jwt");
             var issuer = jwtSection["Issuer"];
             var audience = jwtSection["Audience"];
@@ -141,9 +127,7 @@ namespace CommunityRecyclingGamified
 
             builder.Services.AddAuthorization();
 
-            // ----------------------------
             // Build
-            // ----------------------------
             var app = builder.Build();
 
             if (app.Environment.IsDevelopment())
@@ -152,9 +136,7 @@ namespace CommunityRecyclingGamified
                 app.UseSwaggerUI();
             }
 
-            // ----------------------------
             // Pipeline (order matters)
-            // ----------------------------
             app.UseHttpsRedirection();
 
             // CORS BEFORE auth

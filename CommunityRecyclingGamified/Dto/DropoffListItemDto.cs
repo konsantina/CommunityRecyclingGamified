@@ -14,7 +14,6 @@ namespace CommunityRecyclingGamified.Dto
         public string? Location { get; set; }
         public DateTime CreatedAt { get; set; }
 
-        // για UI labels (εύκολο)
         public int MaterialId { get; set; }
         public string MaterialName { get; set; }
 
