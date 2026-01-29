@@ -7,11 +7,9 @@ This folder contains the **backend** for the Community Recycling Gamified platfo
 Admin accounts:
 - Email: test@gmail.com  
   Password: 123
-- Email: takis@gmail.com  
-  Password: 123
 
 User account:
-- Email: user@gmail.com  
+- Email: takis@gmail.com  
   Password: 123
 
 ## Main Features (API)
