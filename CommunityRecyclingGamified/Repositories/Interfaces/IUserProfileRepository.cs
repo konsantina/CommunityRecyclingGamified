@@ -1,6 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using CommunityRecyclingGamified.Dto;
 using CommunityRecyclingGamified.Models;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace CommunityRecyclingGamified.Repositories.Interfaces
 {
@@ -10,7 +11,9 @@ namespace CommunityRecyclingGamified.Repositories.Interfaces
         Task<UserProfile?> GetByIdAsync(int id);
         Task<UserProfile?> GetByEmailAsync(string email);
         Task<bool> AddAsync(UserProfile user);
-        void Update(UserProfile user);
+        Task<bool> UpdateAsync(UserProfile user);
         Task<bool> Delete(int id);
+        Task<List<BadgeDto>> GetMyBadgesAsync(int userId);
+
     }
 }

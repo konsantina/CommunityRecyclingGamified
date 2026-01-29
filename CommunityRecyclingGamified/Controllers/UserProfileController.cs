@@ -1,8 +1,9 @@
 ﻿using CommunityRecyclingGamified.Dto;
 using CommunityRecyclingGamified.Models;
 using CommunityRecyclingGamified.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace CommunityRecyclingGamified.Controllers
 {
@@ -11,53 +12,74 @@ namespace CommunityRecyclingGamified.Controllers
     public class UserProfileController : ControllerBase
     {
         private readonly IUserProfileRepository _userProfileRepository;
+
         public UserProfileController(IUserProfileRepository userProfileRepository)
         {
             _userProfileRepository = userProfileRepository;
         }
-        // GET: api/UserProfile
+
+        /// <summary>
+        /// Get all user profiles (Admin only).
+        /// </summary>
+        [Authorize(Roles = "Admin")]
         [HttpGet]
+        [ProducesResponseType(typeof(IEnumerable<UserProfile>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
         public async Task<ActionResult<IEnumerable<UserProfile>>> GetAll()
         {
             var userProfiles = await _userProfileRepository.GetAllAsync();
             return Ok(userProfiles);
         }
 
+        /// <summary>
+        /// Get user profile by id (Admin only).
+        /// </summary>
+        [Authorize(Roles = "Admin")]
         [HttpGet("{id:int}")]
-        //api/UserProfile/5
+        [ProducesResponseType(typeof(UserProfile), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<UserProfile>> GetById(int id)
         {
             var userProfile = await _userProfileRepository.GetByIdAsync(id);
 
             if (userProfile == null)
-            {
                 return NotFound();
-            }
 
             return Ok(userProfile);
         }
 
-        [HttpGet("{email}")]
-
+       
+        [Authorize(Roles = "Admin")]
+        [HttpGet("by-email/{email}")]
+        [ProducesResponseType(typeof(UserProfile), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<UserProfile>> GetByEmail(string email)
         {
             var userProfile = await _userProfileRepository.GetByEmailAsync(email);
 
             if (userProfile == null)
-            {
                 return NotFound();
-            }
 
             return Ok(userProfile);
         }
 
+   
+        [Authorize(Roles = "Admin")]
         [HttpPost]
+        [ProducesResponseType(typeof(UserProfile), StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         public async Task<ActionResult<UserProfile>> AddUserProfile([FromBody] UserProfileDto userProfile)
         {
             if (!ModelState.IsValid)
-            {
                 return BadRequest(ModelState);
-            }
 
             var user = new UserProfile
             {
@@ -66,21 +88,26 @@ namespace CommunityRecyclingGamified.Controllers
                 PasswordHash = userProfile.PasswordHash,
                 NeighborhoodId = userProfile.NeighborhoodId,
                 TotalPoints = userProfile.TotalPoints,
-                Level = userProfile.Level
+                Level = userProfile.Level,
+                CreatedAt = DateTime.UtcNow
             };
-            
+
             var saved = await _userProfileRepository.AddAsync(user);
 
             if (!saved)
-            {
                 return StatusCode(StatusCodes.Status500InternalServerError, "Could not save user");
-            }
 
-            // 201 Created + Location header + σώμα
             return CreatedAtAction(nameof(GetById), new { id = user.Id }, user);
         }
 
+      
+        [Authorize(Roles = "Admin")]
         [HttpPut("{id:int}")]
+        [ProducesResponseType(typeof(UserProfile), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<UserProfile>> UpdateUserProfile(int id, [FromBody] UserProfileDto userProfile)
         {
             if (!ModelState.IsValid)
@@ -97,12 +124,18 @@ namespace CommunityRecyclingGamified.Controllers
             existing.TotalPoints = userProfile.TotalPoints;
             existing.Level = userProfile.Level;
 
-            _userProfileRepository.Update(existing);
+            _userProfileRepository.UpdateAsync(existing);
 
             return Ok(existing);
         }
 
+   
+        [Authorize(Roles = "Admin")]
         [HttpDelete("{id:int}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(StatusCodes.Status403Forbidden)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> DeleteUserProfile(int id)
         {
             var deleted = await _userProfileRepository.Delete(id);
@@ -113,6 +146,20 @@ namespace CommunityRecyclingGamified.Controllers
             return NoContent();
         }
 
+        [Authorize]
+        [HttpGet("me/badges")]
+        public async Task<IActionResult> GetMyBadges()
+        {
+            var userIdClaim =
+                User.FindFirst(ClaimTypes.NameIdentifier)?.Value ??
+                User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier")?.Value;
+
+            if (!int.TryParse(userIdClaim, out var userId))
+                return Unauthorized();
+
+            var badges = await _userProfileRepository.GetMyBadgesAsync(userId);
+            return Ok(badges);
+        }
 
 
     }

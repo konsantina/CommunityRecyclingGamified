@@ -1,7 +1,6 @@
 ﻿using CommunityRecyclingGamified.Data;
 using CommunityRecyclingGamified.Models;
 using CommunityRecyclingGamified.Repositories.Interfaces;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace CommunityRecyclingGamified.Repositories
@@ -13,19 +12,34 @@ namespace CommunityRecyclingGamified.Repositories
         {
             _context = context;
         }
-       
+
         public async Task<bool> AddAsync(Reward reward)
         {
-            _context.Rewards.AddAsync(reward);
+            await _context.Rewards.AddAsync(reward);
             return await _context.SaveChangesAsync() > 0;
+        }
+
+        public async Task<IEnumerable<Reward>> GetAllAsync()
+        {
+            return await _context.Rewards
+                .OrderByDescending(r => r.Id)
+                .ToListAsync();
         }
 
         public async Task<IEnumerable<Reward>> GetAllActiveAsync()
         {
-            return await _context.Rewards.ToListAsync();
+            var now = DateTime.UtcNow;
+
+            return await _context.Rewards
+                .Where(r => r.IsActive)
+                .Where(r => !r.ValidFrom.HasValue || r.ValidFrom.Value <= now)
+                .Where(r => !r.ValidTo.HasValue || r.ValidTo.Value >= now)
+                .Where(r => r.Stock > 0)
+                .OrderByDescending(r => r.Id)
+                .ToListAsync();
         }
 
-        public async Task<Reward> GetByIdAsync(int id)
+        public async Task<Reward?> GetByIdAsync(int id)
         {
             return await _context.Rewards.FirstOrDefaultAsync(r => r.Id == id);
         }
@@ -33,8 +47,7 @@ namespace CommunityRecyclingGamified.Repositories
         public async Task<bool> UpdateAsync(Reward reward, int id)
         {
             var oldReward = await _context.Rewards.FirstOrDefaultAsync(x => x.Id == id);
-            if (oldReward == null)
-                return false;
+            if (oldReward == null) return false;
 
             oldReward.Title = reward.Title;
             oldReward.Description = reward.Description;
@@ -49,12 +62,24 @@ namespace CommunityRecyclingGamified.Repositories
             return await _context.SaveChangesAsync() > 0;
         }
 
+        public async Task<(bool ok, string? error)> DeleteAsyncSafe(int id)
+        {
+            var reward = await _context.Rewards.FirstOrDefaultAsync(r => r.Id == id);
+            if (reward == null) return (false, "NOT_FOUND");
+
+            var hasRedemptions = await _context.Redemptions.AnyAsync(x => x.RewardId == id);
+            if (hasRedemptions) return (false, "HAS_REDEMPTIONS");
+
+            _context.Rewards.Remove(reward);
+            await _context.SaveChangesAsync();
+            return (true, null);
+        }
+
         public async Task<bool> DeleteAsync(int id)
         {
             var reward = await _context.Rewards.FirstOrDefaultAsync(o => o.Id == id);
-            if (reward == null) 
-                return false;
-            
+            if (reward == null) return false;
+
             _context.Rewards.Remove(reward);
             return await _context.SaveChangesAsync() > 0;
         }

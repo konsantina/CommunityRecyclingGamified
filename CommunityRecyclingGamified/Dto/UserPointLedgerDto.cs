@@ -10,7 +10,7 @@ namespace CommunityRecyclingGamified.Dto
         public int UserId { get; set; }
 
         [Required]
-        public int Amount { get; set; }  // + θετικό, - αρνητικό
+        public int Amount { get; set; } 
 
         [Required]
         public PointReason Reason { get; set; }

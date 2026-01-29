@@ -1,4 +1,5 @@
-﻿using CommunityRecyclingGamified.Models;
+﻿using CommunityRecyclingGamified.Dto;
+using CommunityRecyclingGamified.Models;
 
 namespace CommunityRecyclingGamified.Repositories.Interfaces
 {
@@ -6,7 +7,7 @@ namespace CommunityRecyclingGamified.Repositories.Interfaces
     {
         Task<Redemption?> GetByIdAsync(int id);
         Task<IEnumerable<Redemption>> GetByUserAsync(int userId);
-        Task<IEnumerable<Redemption>> GetPendingAsync();
+        Task<IEnumerable<PendingRedemptionDto>> GetPendingAsync();
         Task<bool> AddAsync(Redemption redemption);
 
         Task<bool> ApproveAsync(int redemptionId, int approverUserId);

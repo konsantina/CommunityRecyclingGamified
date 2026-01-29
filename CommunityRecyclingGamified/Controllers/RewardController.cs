@@ -1,10 +1,8 @@
 ﻿using CommunityRecyclingGamified.Dto;
 using CommunityRecyclingGamified.Models;
-using CommunityRecyclingGamified.Repositories;
 using CommunityRecyclingGamified.Repositories.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions;
-using System.ComponentModel.DataAnnotations;
 
 namespace CommunityRecyclingGamified.Controllers
 {
@@ -13,6 +11,7 @@ namespace CommunityRecyclingGamified.Controllers
     public class RewardController : ControllerBase
     {
         private readonly IRewardRepository _rewardRepository;
+
         public RewardController(IRewardRepository rewardRepository)
         {
             _rewardRepository = rewardRepository;
@@ -21,88 +20,105 @@ namespace CommunityRecyclingGamified.Controllers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Reward>>> GetAllRewards()
         {
-            var reward = await _rewardRepository.GetAllActiveAsync();
-            return Ok(reward);
+            var rewards = await _rewardRepository.GetAllActiveAsync();
+            return Ok(rewards);
         }
 
         [HttpGet("{id:int}")]
         public async Task<ActionResult<Reward>> GetRewardsById(int id)
         {
             var reward = await _rewardRepository.GetByIdAsync(id);
-
+            if (reward == null) return NotFound();
             return Ok(reward);
         }
 
-        [HttpDelete("{id:int}")]
-        public async Task<ActionResult<Reward>> DeleteByIdAsync(int id)
+        [Authorize(Roles = "Admin")]
+        [HttpPost]
+        public async Task<IActionResult> Create([FromBody] RewardCreateDto dto)
         {
-            var result = await _rewardRepository.DeleteAsync(id);
-            if (!result)
-                return NotFound();
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (dto.ValidFrom.HasValue && dto.ValidTo.HasValue && dto.ValidFrom > dto.ValidTo)
+                return BadRequest("ValidFrom cannot be after ValidTo");
+
+            var reward = new Reward
+            {
+                Title = dto.Title.Trim(),
+                Description = (dto.Description ?? "").Trim(),
+                CostPoints = dto.CostPoints,
+                Stock = dto.Stock,
+                ValidFrom = dto.ValidFrom,
+                ValidTo = dto.ValidTo,
+                TermsUrl = (dto.TermsUrl ?? "").Trim(),
+                IsActive = dto.IsActive
+            };
+
+            var saved = await _rewardRepository.AddAsync(reward);
+
+            if (!saved)
+                return StatusCode(StatusCodes.Status500InternalServerError, "Could not save reward");
+
+            return CreatedAtAction(nameof(GetRewardsById), new { id = reward.Id }, reward);
+        }
+
+        [Authorize(Roles = "Admin")]
+        [HttpPut("{id:int}")]
+        public async Task<IActionResult> UpdateReward([FromBody] RewardCreateDto dto, int id)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            var reward = new Reward
+            {
+                Title = dto.Title.Trim(),
+                Description = (dto.Description ?? "").Trim(),
+                CostPoints = dto.CostPoints,
+                Stock = dto.Stock,
+                ValidFrom = dto.ValidFrom,
+                ValidTo = dto.ValidTo,
+                TermsUrl = (dto.TermsUrl ?? "").Trim(),
+                IsActive = dto.IsActive
+            };
+
+            var saved = await _rewardRepository.UpdateAsync(reward, id);
+            if (!saved) return NotFound();
 
             return NoContent();
         }
 
-        [HttpPost]
+        //[Authorize(Roles = "Admin")]
+        //[HttpGet("admin")]
+        //public async Task<ActionResult<IEnumerable<Reward>>> GetAllRewardsAdmin()
+        //{
+        //    var rewards = await _rewardRepository.GetAllAsync();
+        //    return Ok(rewards);
+        //}
 
-        public async Task<ActionResult<Reward>> AddReward([FromBody] RewardCreateDto reward)
+        [Authorize(Roles = "Admin")]
+        [HttpGet("admin")]
+        public async Task<IActionResult> GetAllAdmin()
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var user = new Reward
-            {
-                Title = reward.Title,
-                Description = reward.Description,
-                CostPoints = reward.CostPoints,
-                Stock = reward.Stock,
-                ValidFrom = reward.ValidFrom,
-                ValidTo = reward.ValidTo,
-                TermsUrl = reward.TermsUrl
-            };
-
-            var saved = await _rewardRepository.AddAsync(user);
-
-            if (!saved)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Could not save user");
-            }
-
-            // 201 Created + Location header + σώμα
-            return CreatedAtAction(nameof(GetRewardsById), new { id = user.Id }, user);
+            var rewards = await _rewardRepository.GetAllActiveAsync();
+            return Ok(rewards);
         }
 
-        [HttpPut("{id:int}")]
-       public async Task<ActionResult<Reward>> UpdateReward(RewardCreateDto reward, int id)
+        [Authorize(Roles = "Admin")]
+        [HttpDelete("{id:int}")]
+        public async Task<IActionResult> DeleteByIdAsync(int id)
         {
-            if (!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
+            var (ok, error) = await _rewardRepository.DeleteAsyncSafe(id);
 
-            var user = new Reward
-            {
-                Title = reward.Title,
-                Description = reward.Description,
-                CostPoints = reward.CostPoints,
-                Stock = reward.Stock,
-                ValidFrom = reward.ValidFrom,
-                ValidTo = reward.ValidTo,
-                TermsUrl = reward.TermsUrl
-            };
-            var saved = await _rewardRepository.UpdateAsync(user,id);
+            if (ok) return NoContent();
 
-            if (!saved)
-            {
-                return StatusCode(StatusCodes.Status500InternalServerError, "Could not save user");
-            }
+            if (error == "NOT_FOUND")
+                return NotFound();
 
-            // 201 Created + Location header + σώμα
-            return Ok(saved);
+            if (error == "HAS_REDEMPTIONS")
+                return Conflict("Δεν μπορεί να διαγραφεί: υπάρχουν εξαργυρώσεις για αυτό το reward.");
+
+            return StatusCode(500, "Delete failed.");
         }
 
     }
 }
-
