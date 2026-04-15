@@ -51,12 +51,12 @@ namespace CommunityRecyclingGamified.Data
                 e.HasOne(d => d.UserProfile)
                     .WithMany(u => u.Dropoffs)
                     .HasForeignKey(d => d.UserId)
-                    .OnDelete(DeleteBehavior.Cascade);
+                    .OnDelete(DeleteBehavior.Cascade); // Αν σβηστεί χρήστης → σβήνονται και τα Dropoffs του
 
                 e.HasOne(d => d.Material)
                     .WithMany(m => m.Dropoffs)
                     .HasForeignKey(d => d.MaterialId)
-                    .OnDelete(DeleteBehavior.Restrict);
+                    .OnDelete(DeleteBehavior.Restrict); // Αν σβηστεί Material → ΔΕΝ σβήνονται τα Dropoffs (για ιστορικό)
 
                 e.HasOne(d => d.Neighborhood)
                     .WithMany(n => n.Dropoffs)
